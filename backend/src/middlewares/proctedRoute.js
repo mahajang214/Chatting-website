@@ -8,6 +8,7 @@ module.exports.protectedRoute = async (req, res, next) => {
   try {
     const decode = jwt.verify(token, process.env.SECRET_KEY);
     req.user = decode;
+    // console.log("procted Route decode:",decode);
     next();
   } catch (err) {
     console.log("procted route error", err);

@@ -3,13 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 module.exports = {
-  // const comparePass = await bcrypt.compare(password, User.password)
-
-  // const cookieforUser = await jwt.sign({ _id }, process.env.SECRET_KEY, {
-  // expiresIn: "1d",
-
-  // const verify = await jwt.verify(token, process.env.SECRET_KEY);
-
+  
   registerUser: async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
