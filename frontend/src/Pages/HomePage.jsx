@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react'
 import AllUsersSidebar from '../Components/AllUsersSidebar'
 import axios from 'axios';
 import Welcome from '../Components/Welcome';
-import Loading from '../Components/Loading';
+import Home from '../Components/Home';
+import userStore from '../Store/Store';
 
 function HomePage() {
+  const {from,setFrom,fromName,setFromName,to} =userStore();
 
   const [data, setData] = useState(null);
   useEffect(() => {
@@ -17,11 +19,11 @@ function HomePage() {
           withCredentials: true
         });
         setData(res.data.user);
-        console.log(data);
+        setFrom(res.data.user._id);
+        setFromName(res.data.user.name);
+        // console.log("from:",from,"from Name:", fromName,"data:", res.data);
       } catch (error) {
-        console.log("Error in fetching user data", error);
-
-
+        // console.log("Error in fetching user data", error);
       }
 
     }
@@ -34,7 +36,9 @@ function HomePage() {
         <AllUsersSidebar />
       </div>
       <div className='w-[75%] bg-[#222831] h-screen flex justify-between items-center'>
-        <Welcome username={`${data?data.name:null}`} />
+        {to?<Home/>:<Welcome username={`${data?data.name:null}`} />}
+        
+        
       </div>
     </div>
   )

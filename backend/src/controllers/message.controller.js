@@ -44,7 +44,7 @@ module.exports = {
           { from: userId, to: recieverId },
           { from: recieverId, to: userId },
         ],
-      }).sort({ createdAt: -1 });
+      }).sort({ createdAt: 1 });
       res.status(200).json({ msg: "messages fetched successfully", messages });
     } catch (err) {
       console.log("getting msg error", err);
