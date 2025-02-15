@@ -3,17 +3,20 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import RegisterPage from './Pages/RegisterPage'
 import LoginPage from './Pages/LoginPage'
 import HomePage from './Pages/HomePage'
+import userStore from './Store/Store'
+import ErrorPage from './Pages/ErrorPage'
 
 function App() {
-  // const [count, setCount] = useState(0)
+  const {verified}=userStore();
 
   return (
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={verified?<HomePage />:<ErrorPage/>} />
           <Route path='/register' element={<RegisterPage/>}/>
           <Route path='/login' element={<LoginPage/>}/>
+          <Route path='*' element={<ErrorPage/>}/>
         </Routes>
       </BrowserRouter>
 

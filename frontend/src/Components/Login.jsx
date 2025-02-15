@@ -5,9 +5,11 @@ import ErrorMsg from './ErrorMsg';
 import axios from 'axios';
 import gsap from 'gsap';
 import Loading from './Loading';
+import userStore from '../Store/Store';
 
 function Login() {
   const navigate = useNavigate();
+  const {setVerified}=userStore();
   const [data, setData] = useState({
     email: '',
     password: '',
@@ -25,6 +27,7 @@ function Login() {
       });
       setLoading(false);
       console.log(res.data.msg);
+      setVerified(true);
       setData({ email: "", password: "" });
       <ErrorMsg msg={`Login successfull`} />
       navigate('/');
