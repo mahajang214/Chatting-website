@@ -1,12 +1,19 @@
 import axios from 'axios';
 import React, { useState } from 'react'
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { useNavigate } from 'react-router-dom';
+import ErrorMsg from './ErrorMsg';
+import Loading from './Loading';
 
 function Register() {
+    const navigate = useNavigate();
     const [data, setData] = useState({
         name: '',
         email: '',
         password: '',
     });
+    const [loading, setLoading] = useState(false);
     const handleChange = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
     }
@@ -21,23 +28,32 @@ function Register() {
             return;
         }
         try {
+            setLoading(true);
             const res = await axios.post('http://localhost:3001/api/auth/register', data, {
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 withCredentials: true
-            })
+            });
+            setLoading(false);
             console.log(res.data.msg);
             setData({ name: "", email: "", password: "" });
+            <ErrorMsg msg={`Registration successfull`} />
+            navigate('/login');
         } catch (error) {
             console.log(error);
+            <ErrorMsg msg={`something went wrong `} />
 
         }
 
     }
+    useGSAP(() => {
+        gsap.from('#register', {
+            x: 1000,
+            duration: .9,
+            ease: 'expo.inOut'
+        })
+    }, [])
 
     return (
-        <div className='w-full h-full flex justify-center items-center '>
+        <div id='register' className='w-full h-full flex justify-center items-center '>
             <form onSubmit={handleSubmit} className='border-[1px] py-5 px-3 w-1/2 rounded-md ' >
 
                 <label className="input input-bordered flex items-center gap-2 mt-4 text-2xl">
@@ -79,7 +95,7 @@ function Register() {
                     </svg>
                     <input onChange={handleChange} name='password' value={data.password} type="password" className="grow" placeholder="******" />
                 </label>
-                <button className="w-full mt-4 bg-[#06dfb0] text-white font-bold py-1.5 text-2xl rounded-full">Register </button>
+               {loading===true?<Loading/>: <button className="w-full mt-4 bg-[#06dfb0] text-white font-bold py-1.5 text-2xl rounded-full">Register </button>}
             </form>
         </div>
     )

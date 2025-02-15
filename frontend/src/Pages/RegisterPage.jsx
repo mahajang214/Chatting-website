@@ -2,6 +2,7 @@ import React from 'react'
 import RegLog from '../Components/RegLog'
 import Register from '../Components/Register'
 
+
 function RegisterPage() {
     return (
         <div className='w-full h-screen flex justify-between items-center '>
