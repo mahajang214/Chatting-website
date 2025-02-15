@@ -50,5 +50,20 @@ module.exports = {
       console.log("getting msg error", err);
       res.status(400).json({ msg: "Internal server error" });
     }
-  },
+  },fetchUsers:async (req,res) => {
+    const userId =req.user._id;
+    try {
+      const users=await User.find({_id:{$ne:userId}}).select(['name','_id',]); //'profilePic' import nahi ki he abi tak
+      if(!users){
+        return res.status(404).json({msg:'no user found'})
+      }
+      res.status(200).json({msg:'users fetched successfully',users});
+
+    } catch (error) {
+      console.log(error);
+      res.status(404).json({msg:'Not found users'});
+      
+    }
+    
+  }
 };
