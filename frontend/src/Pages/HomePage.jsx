@@ -5,9 +5,12 @@ import Welcome from '../Components/Welcome';
 import Home from '../Components/Home';
 import userStore from '../Store/Store';
 import Global from '../Components/Global';
+import ThemeChanger from '../Components/ThemeChanger';
+import ThemeStore from '../Store/ThemeStore';
 
 function HomePage() {
   const {from,setFrom,fromName,setFromName,to,global} =userStore();
+  const {chatBody}=ThemeStore();
 
   const [data, setData] = useState(null);
   useEffect(() => {
@@ -36,9 +39,9 @@ function HomePage() {
       <div className='w-[25%]  h-screen flex justify-between rounded-r-lg overflow-hidden  items-center'>
         <AllUsersSidebar />
       </div>
-      <div className='w-[75%] bg-[#222831] h-screen flex justify-between items-center'>
+      <div className='w-[75%] bg-[#222831] h-screen flex justify-between items-center' style={{backgroundColor:`${chatBody}`}}>
         {to?to === 'global' ? <Global/>:<Home/>:<Welcome username={`${data?data.name:null}`} />}
-       
+    
         
       </div>
     </div>

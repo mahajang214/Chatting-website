@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react'
 import userStore from '../Store/Store'
 import Loading from './Loading';
 import axios from 'axios';
+import ThemeStore from '../Store/ThemeStore';
 function Global() {
     const [globMsg, setGlobMsg] = useState(null)
     const [loading, setLoading] = useState(false)
     const { global, from, fromName,setVerified } = userStore();
     const [inputText, setInputText] = useState('');
     const [openSetting, setOpenSetting] = useState(false);
+    const {themeColor}=ThemeStore();
     useEffect(() => {
         const getGlobalMessages = async () => {
             try {
@@ -74,7 +76,7 @@ function Global() {
                                     className={`  relative  px-2 py-4 rounded-tl-xl rounded-b-xl rounded-tr-0 mt-3   bg-[#f8f8f861] overflow-hidden `}>
 
                                     <h3 className={`text-white text-right`} >{el.textData}</h3>
-                                    <p className="absolute top-[0px] text-lg right-[10px]  text-[#00ffe1f0]">{el.fromName}</p>
+                                    <p className="absolute top-[0px] text-lg right-[10px]  " style={{color:`${themeColor}`}} >{el.fromName}</p>
                                     <p className={`absolute bottom-0 left-[1px]  text-[#ffffffb4] text-sm`}>{new Date(el.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                 </div>
                             </div>
@@ -89,7 +91,7 @@ function Global() {
                         <div key={k} id='messageCommingFromBackendTo' className="w-full flex justify-start items-start">
                             <div className={` relative  px-2 py-4  rounded-tr-xl rounded-b-xl rounded-tl-0 mt-3   bg-[#f8f8f861] overflow-hidden `}>
                                 <h3 className="text-white ">{el.textData}</h3>
-                                <p className="absolute top-[0px]  text-md text-[#00ffe1f0]">{el.fromName}</p>
+                                <p className="absolute top-[0px]  text-md text-[#06dfb0]"  >{el.fromName}</p>
                                 <p className="absolute bottom-0 right-[1px] text-[#ffffffb4] text-sm">{new Date(el.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                             </div>
                         </div>
@@ -99,7 +101,7 @@ function Global() {
                 }) : <Loading />}
             </main>
             <div className='bg-[#ffffff17] py-1 px-3 rounded-lg flex justify-between items-center'>
-        <input onChange={(e) => setInputText(e.target.value)} value={inputText} className='w-full outline-none px-1 text-xl' type="text" placeholder='Hey there type something' />
+        <input onChange={(e) => setInputText(e.target.value)} value={inputText} className='w-full outline-none px-1 text-white text-xl' type="text" placeholder='Hey there type something' />
         <input type="file" className='hidden' name="" id="selectFiles" />
         <button onClick={() => {
           const selectFiles = document.querySelector('#selectFiles');
