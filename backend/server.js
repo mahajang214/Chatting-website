@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const ConnectDB = require('./src/DB/ConnectDB.js');
 const authRoutes = require('./src/routes/User.routes.js');
 const messageRoutes=require('./src/routes/message.routes.js');
+const globalRoute=require('./src/routes/Global.route.js')
 const web = express();
 
 ConnectDB();
@@ -19,6 +20,7 @@ web.use(cookieParser());
 
 web.use('/api/auth', authRoutes);
 web.use('/api/chat',messageRoutes);
+web.use('/api',globalRoute)
 // web.get('/', (req, res) => {
 //     console.log("welcome to server");
 //     res.status(200).json({ msg: "welcome to server" });

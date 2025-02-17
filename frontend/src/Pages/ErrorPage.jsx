@@ -58,7 +58,7 @@ const ErrorPage = () => {
           </button>
           <button
             className="btn bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg transition duration-300"
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate('/register')}
           >
             Go to Sign Up
           </button>

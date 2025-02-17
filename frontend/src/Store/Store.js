@@ -6,6 +6,8 @@ const userStore = create((set) => ({
   to: "",
   toName: "",
   verified:false,
+  global:false,
+  setGlobal:(e)=>set((state)=>({global:e})),
   setVerified:(e)=>set((state)=>({verified:e})),
   setFrom: (from) => set((state) => ({ from: from })),
   setFromName: (name) => set((state) => ({ fromName: name })),

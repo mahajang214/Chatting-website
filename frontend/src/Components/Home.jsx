@@ -6,21 +6,23 @@ import gsap from 'gsap';
 import userStore from '../Store/Store';
 import { useNavigate } from 'react-router-dom';
 
+
 function Home() {
   const [data, setData] = useState(null);
-  const { to, toName, fromName,verified,setVerified } = userStore();
+  const { to, toName, fromName, setVerified, global, setGlobal, from, setTo, setToName } = userStore();
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [openSetting, setOpenSetting] = useState(false);
-  const navigate= useNavigate();
+  const navigate = useNavigate();
   // console.log("fromName",fromName,"to Name: ",toName);
 
   useEffect(() => {
     const fetchMessages = async () => {
+      if (global) return
       try {
         const res = await axios.get(`http://localhost:3001/api/chat/get/${to}`, { withCredentials: true });
         setData(res.data.messages);
-        console.log(data);
+        // console.log(data);
       } catch (error) {
         console.error("error in fetching messages", error);
 
@@ -52,11 +54,14 @@ function Home() {
   // }, [to])
 
   const sendData = async (e) => {
+
     e.preventDefault();
     if (inputText === '') {
       alert("Please enter a message");
       return;
     }
+
+
     try {
       setLoading(true);
       const send = await axios.post(`http://localhost:3001/api/chat/send/${to}`, { text: inputText }, { withCredentials: true });
@@ -67,6 +72,7 @@ function Home() {
       console.log(error);
 
     }
+
   }
   const logoutUser = async (e) => {
     e.preventDefault();
@@ -93,7 +99,7 @@ function Home() {
         </button>
       </nav>
       <main className='w-full h-[88.4%]'>
-        {data && data.length > 0 ?
+        { data && data.length > 0 ?
           data.map((el, k) => {
             // console.log("el", el);
             // console.log(Boolean(to===el.from));  //to ===el.from
@@ -125,19 +131,20 @@ function Home() {
                 </div>
               )
             }
-          }) : <Loading />
-        }
+          }) : <Loading />}
+
+
         {loading && <Loading />}
         {/* data.length<?<h1 className='text-2xl'>You haven't missed anything yet! No messages to show.</h1>: */}
       </main>
       <div className='bg-[#ffffff17] py-1 px-3 rounded-lg flex justify-between items-center'>
         <input onChange={(e) => setInputText(e.target.value)} value={inputText} className='w-full outline-none px-1 text-xl' type="text" placeholder='Hey there type something' />
         <input type="file" className='hidden' name="" id="selectFiles" />
-        <button onClick={()=>{
-          const selectFiles=document.querySelector('#selectFiles');
+        <button onClick={() => {
+          const selectFiles = document.querySelector('#selectFiles');
           selectFiles.click();
         }} className='px-2  w-[60px] h-[40px] cursor-pointer mr-3 rounded-md text-xl '>
-        <svg className='w-full h-full' fill='#06dfb0' viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><title></title><g id="Image"><path d="M25,2H7A5,5,0,0,0,2,7V25a5,5,0,0,0,5,5H25a5,5,0,0,0,5-5V7A5,5,0,0,0,25,2ZM7,4H25a3,3,0,0,1,3,3v5.59l-1.88-1.88a3,3,0,0,0-4.24,0l-7.95,8-3-2.42a3,3,0,0,0-3.8,0L4,18.86V7A3,3,0,0,1,7,4ZM25,28H7a3,3,0,0,1-3-3V21.47l4.38-3.66a1,1,0,0,1,1.27,0l3.73,3a1,1,0,0,0,1.33-.07l8.58-8.59a1,1,0,0,1,1.42,0L28,15.41V25A3,3,0,0,1,25,28Z"></path><path d="M10,13a3,3,0,1,0-3-3A3,3,0,0,0,10,13Zm0-4a1,1,0,1,1-1,1A1,1,0,0,1,10,9Z"></path></g></svg>
+          <svg className='w-full h-full' fill='#06dfb0' viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><title></title><g id="Image"><path d="M25,2H7A5,5,0,0,0,2,7V25a5,5,0,0,0,5,5H25a5,5,0,0,0,5-5V7A5,5,0,0,0,25,2ZM7,4H25a3,3,0,0,1,3,3v5.59l-1.88-1.88a3,3,0,0,0-4.24,0l-7.95,8-3-2.42a3,3,0,0,0-3.8,0L4,18.86V7A3,3,0,0,1,7,4ZM25,28H7a3,3,0,0,1-3-3V21.47l4.38-3.66a1,1,0,0,1,1.27,0l3.73,3a1,1,0,0,0,1.33-.07l8.58-8.59a1,1,0,0,1,1.42,0L28,15.41V25A3,3,0,0,1,25,28Z"></path><path d="M10,13a3,3,0,1,0-3-3A3,3,0,0,0,10,13Zm0-4a1,1,0,1,1-1,1A1,1,0,0,1,10,9Z"></path></g></svg>
         </button>
         <button onClick={sendData} className='px-3 py-2 w-[50px] h-[40px] rounded-md text-xl bg-[#06dfb0]'>
           <svg xmlns="http://www.w3.org/2000/svg" className='w-full h-full' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>

@@ -1,3 +1,4 @@
+const Global = require("../modal/Global.modal");
 const Message = require("../modal/Message.modal");
 const User = require("../modal/User.modal");
 
@@ -50,20 +51,51 @@ module.exports = {
       console.log("getting msg error", err);
       res.status(400).json({ msg: "Internal server error" });
     }
-  },fetchUsers:async (req,res) => {
-    const userId =req.user._id;
+  },
+  fetchUsers: async (req, res) => {
+    const userId = req.user._id;
     try {
-      const users=await User.find({_id:{$ne:userId}}).select(['name','_id',]); //'profilePic' import nahi ki he abi tak
-      if(!users){
-        return res.status(404).json({msg:'no user found'})
+      const users = await User.find({ _id: { $ne: userId } }).select([
+        "name",
+        "_id",
+      ]); //'profilePic' import nahi ki he abi tak
+      if (!users) {
+        return res.status(404).json({ msg: "no user found" });
       }
-      res.status(200).json({msg:'users fetched successfully',users});
-
+      res.status(200).json({ msg: "users fetched successfully", users });
     } catch (error) {
       console.log(error);
-      res.status(404).json({msg:'Not found users'});
-      
+      res.status(404).json({ msg: "Not found users" });
     }
+  },
+  globalMessage: async (req, res) => {
+    const { textData, image, from,to,fromName } = req.body;
     
-  }
+    try {
+      const globalList = await Global.create({
+        textData,
+        image:image?image:null,
+        from,
+        fromName
+      });
+      
+      console.log("text data",textData);
+      
+      res.status(200).json({ msg: "message sent successfully", globalList });
+    } catch (error) {
+      console.log("Error sending global message: ", error);
+      res.status(400).json({ msg: "Failed to send global message" });
+    }
+  },
+  getGlobalMessage:async (req,res) => {
+    const userId = req.user._id;
+    try {
+      const globalMessages = await Global.find().sort({ createdAt: 1 });
+
+      res.status(200).json({ msg: "messages fetched successfully", globalMessages });
+    
+  }catch(err){
+    console.log(err);
+    res.status(404).json({ msg: "global message not found" });
+  }}
 };

@@ -4,9 +4,10 @@ import axios from 'axios';
 import Welcome from '../Components/Welcome';
 import Home from '../Components/Home';
 import userStore from '../Store/Store';
+import Global from '../Components/Global';
 
 function HomePage() {
-  const {from,setFrom,fromName,setFromName,to} =userStore();
+  const {from,setFrom,fromName,setFromName,to,global} =userStore();
 
   const [data, setData] = useState(null);
   useEffect(() => {
@@ -36,8 +37,8 @@ function HomePage() {
         <AllUsersSidebar />
       </div>
       <div className='w-[75%] bg-[#222831] h-screen flex justify-between items-center'>
-        {to?<Home/>:<Welcome username={`${data?data.name:null}`} />}
-        
+        {to?to === 'global' ? <Global/>:<Home/>:<Welcome username={`${data?data.name:null}`} />}
+       
         
       </div>
     </div>
