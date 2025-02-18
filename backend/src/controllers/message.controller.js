@@ -6,7 +6,7 @@ module.exports = {
   sendUserDataToFrontend: async (req, res) => {
     const userId = req.user._id;
     try {
-      const user = await User.findById(userId).select(["name", "_id"]);
+      const user = await User.findById(userId).select(["name", "_id","email"]);
       //   console.log(user);
 
       res.status(200).json({ msg: "welcome to chatting website", user });
@@ -58,6 +58,7 @@ module.exports = {
       const users = await User.find({ _id: { $ne: userId } }).select([
         "name",
         "_id",
+        "profilePic"
       ]); //'profilePic' import nahi ki he abi tak
       if (!users) {
         return res.status(404).json({ msg: "no user found" });

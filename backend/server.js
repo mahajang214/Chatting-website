@@ -16,6 +16,7 @@ web.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 web.use(express.json());
+web.use(express.urlencoded({extended:true}));
 web.use(cookieParser());
 
 web.use('/api/auth', authRoutes);

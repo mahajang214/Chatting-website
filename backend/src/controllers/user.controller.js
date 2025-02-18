@@ -1,6 +1,9 @@
 const User = require("../modal/User.modal.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const formidable = require('formidable');
+const {IncomingForm} =require('formidable');
+// const uploadRepo=require('../assest/Uploads');
 
 module.exports = {
   
@@ -65,17 +68,48 @@ module.exports = {
       res.status(500).json({ msg: "Error logging out user" });
     }
   },
-  setProfile: async (res, req) => {
-    const { profilePic } = req.body;
-    const userId = req.user.userId;
-    try {
-      const user = await User.findByIdAndUpdate(userId);
-      user.profilePic = profilePic;
-      await user.save();
-      res.status(200).json({ msg: "Profile updated successfully" });
-    } catch (error) {
-      console.error("Error setting profile:", error);
-      res.status(500).json({ msg: "Error setting profile" });
-    }
+  setProfile: async (req,res) => {
+    const form = new IncomingForm();
+    
+    // Set the upload directory (optional)
+    form.uploadDir = '../assest/Uploads';
+    form.keepExtensions = true; // Keep file extensions
+
+    // Parse the form data (this is asynchronous)
+    form.parse(req,async (err, fields, files) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error parsing form data' });
+        }
+
+        // Log the uploaded files and fields (form data)
+        // console.log('Files:', files);
+        // console.log('Fields:', fields);
+
+        // If no file was uploaded, return an error
+        if (!files.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        // You can use the `files` object to get the file info
+        const profilePic = files.file[0];  // If multiple files are uploaded, handle them accordingly
+        const userId = req.user._id;
+        // console.log("profile pic url Path : ",profilePic.filepath);
+        try {
+          const user = await User.findByIdAndUpdate(userId);
+          user.profilePic = profilePic.filepath;
+          await user.save();
+          res.status(200).json({ msg: "Profile updated successfully" });
+        } catch (error) {
+          console.error("Error setting profile:", error);
+          res.status(500).json({ msg: "Error setting profile" });
+        }
+        // console.log('Uploaded file:', profilePic);
+        
+        // Process the file (save to DB, etc.)
+        // res.json({ message: 'Profile picture uploaded successfully', file: profilePic });
+      });
+      
+    // const { profilePic } = req.body;
+    
   },
 };

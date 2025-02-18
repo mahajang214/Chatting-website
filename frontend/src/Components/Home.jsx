@@ -161,7 +161,7 @@ function Home() {
       {openSetting && (
         <div id="settingPage" className={`absolute top-0 right-[0] w-1/5 h-screen rounded-l-lg flex flex-col items-center`} style={{ backgroundColor: `${themeColor}` }} >
           <h1 className='text-white font-bold text-3xl mt-2'>Setting</h1>
-          <button className='w-full py-4 bg-[#ffffff59] mt-3 px-3 items-center rounded-lg gap-3 flex cursor-pointer'>
+          <button onClick={()=>navigate('/profile')} className='w-full py-4 bg-[#ffffff59] mt-3 px-3 items-center rounded-lg gap-3 flex cursor-pointer'>
             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="32px" height="32px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
               <g id="user">
                 <g>
