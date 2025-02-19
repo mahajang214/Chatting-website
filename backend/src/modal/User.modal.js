@@ -4,8 +4,8 @@ const UserSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      minlength:[3,'Name must be 3 characters long'],
-      unique:true
+      minlength: [3, "Name must be 3 characters long"],
+      unique: true,
     },
     email: {
       type: String,
@@ -14,18 +14,18 @@ const UserSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      minlength: [8, 'Password must be 8 characters long']
+      minlength: [8, "Password must be 8 characters long"],
     },
-    profilePic:{
-        type:String,
-        default: '../assest/default-profile.jpg'
-    }
+    profilePic: {
+      type: String,
+      default: "../assest/default-profile.jpg",
+    },
+    onlineUsers: {
+      type: Array,
+    },
   },
   { timestamps: true }
 );
-
-
-
 
 const User = mongoose.model("User", UserSchema);
 

@@ -6,9 +6,9 @@ module.exports = {
   sendUserDataToFrontend: async (req, res) => {
     const userId = req.user._id;
     try {
-      const user = await User.findById(userId).select(["name", "_id","email"]);
-      //   console.log(user);
-
+      const updatOnline=await User.findByIdAndUpdate({_id:userId});
+      updatOnline.onlineUsers.push({userId});
+      const user = await User.findById(userId).select(["name", "_id","email","onlineUsers"]);
       res.status(200).json({ msg: "welcome to chatting website", user });
     } catch (error) {
       console.log(error);
@@ -21,7 +21,7 @@ module.exports = {
     const recieverId = req.params.id;
     // console.log("userID: ",userId,"recieverId:",recieverId);
 
-    const { text, image } = req.body;
+    const { text, image, } = req.body;
     try {
       const user = await User.findById(userId);
       const newMsg = await Message.create({
@@ -58,7 +58,8 @@ module.exports = {
       const users = await User.find({ _id: { $ne: userId } }).select([
         "name",
         "_id",
-        "profilePic"
+        "profilePic",
+        "onlineUsers"
       ]); //'profilePic' import nahi ki he abi tak
       if (!users) {
         return res.status(404).json({ msg: "no user found" });

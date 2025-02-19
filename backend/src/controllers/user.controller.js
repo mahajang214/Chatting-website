@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const formidable = require('formidable');
 const {IncomingForm} =require('formidable');
+const uploadToCloud = require("../Cloudinary/Cloudinary.js");
 // const uploadRepo=require('../assest/Uploads');
 
 module.exports = {
@@ -98,6 +99,7 @@ module.exports = {
           const user = await User.findByIdAndUpdate(userId);
           user.profilePic = profilePic.filepath;
           await user.save();
+          const uploadCloud= await uploadToCloud(profilePic.filepath);
           res.status(200).json({ msg: "Profile updated successfully" });
         } catch (error) {
           console.error("Error setting profile:", error);
