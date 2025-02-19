@@ -42,7 +42,7 @@ function AllUsersSidebar() {
                     }
                 }} id='fetchedUser' key={k} className='w-full bg-[#ffffff59] flex px-3 py-2 gap-3 mt-3 items-center'>
                     <div className='w-[3.2vw] rounded-full border-3 border-[#ffffffdb] overflow-hidden'>
-                        <img src={el.profilePic ? el.profilePic : pic} className='w-full h-full' alt="User profile pic" />
+                        <img src={pic} className='w-full h-full' alt="User profile pic" />
                     </div>
                     <h1 className='text-white text-xl'>{el.name}</h1>
                 </div>

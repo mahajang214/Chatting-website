@@ -1,106 +1,129 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import userStore from '../Store/Store'
 import Loading from './Loading';
 import axios from 'axios';
 import ThemeStore from '../Store/ThemeStore';
+import { io } from 'socket.io-client'
 function Global() {
-    const [globMsg, setGlobMsg] = useState(null)
-    const [loading, setLoading] = useState(false)
-    const { global, from, fromName,setVerified } = userStore();
-    const [inputText, setInputText] = useState('');
-    const [openSetting, setOpenSetting] = useState(false);
-    const {themeColor}=ThemeStore();
-    useEffect(() => {
-        const getGlobalMessages = async () => {
-            try {
-                const globMsg = await axios.get('http://localhost:3001/api/getGlobalMessage', {
-                    withCredentials: true
-                })
-                setGlobMsg(globMsg.data.globalMessages)
-                // console.log(globMsg.data.globalMessages);
+  const [globMsg, setGlobMsg] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const { global, from, fromName, setVerified,to } = userStore();
+  const [inputText, setInputText] = useState('');
+  const [openSetting, setOpenSetting] = useState(false);
+  const { themeColor } = ThemeStore();
+  const socket = useRef(null);
+  const messagesEndRef = useRef(null);
+  useEffect(() => {
+    const getGlobalMessages = async () => {
+      try {
+        const globMsg = await axios.get('http://localhost:3001/api/getGlobalMessage', {
+          withCredentials: true
+        })
+        setGlobMsg(globMsg.data.globalMessages)
+        // console.log(globMsg.data.globalMessages);
 
-            } catch (error) {
-                console.error("Error fetching global messages: ", error);
-            }
-        }
-        getGlobalMessages();
-    }, []);
-    const logoutUser = async (e) => {
-        e.preventDefault();
-        try {
-          const logout = await axios.get('http://localhost:3001/api/auth/logout', { withCredentials: true });
-          console.log(logout.data.msg);
-          localStorage.clear();
-          setVerified(false);
-          // window.location.reload();
-          // navigate('/login');
-    
-        } catch (error) {
-          console.log("Error in logout user", error);
-    
-        }
+      } catch (error) {
+        console.error("Error fetching global messages: ", error);
       }
-
-    const sendMsgToGlob = async () => {
-        try {
-            setLoading(true);
-            console.log("From: ", from, "From Name: ", fromName);
-            const sendToGlobal = await axios.post('http://localhost:3001/api/send/global', { textData: inputText, from, fromName }, { withCredentials: true });
-            console.log(sendToGlobal.data.globalList);
-            setLoading(false);
-
-        } catch (error) {
-            console.error("Failed to send message to global chat", error);
-            setLoading(false);
-        }
     }
-    return (
-        <div className='w-full h-full relative flex flex-col '>
-            <nav className='py-4 w-full h-[7vh]  px-3 border-b-2 flex text-white justify-between items-center'>
-                <span className='text-xl'>Global Chat-Room</span>
-                <button className='w-[30px] cursor-pointer' onClick={(e) => setOpenSetting(true)} >
-                    <svg className='text-white ' enable-background="new 0 0 32 32" id="Editable-line" version="1.1" viewBox="0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="16" cy="16" fill="none" id="XMLID_224_" r="4" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></circle><path d="  M27.758,10.366l-1-1.732c-0.552-0.957-1.775-1.284-2.732-0.732L23.5,8.206C21.5,9.36,19,7.917,19,5.608V5c0-1.105-0.895-2-2-2h-2  c-1.105,0-2,0.895-2,2v0.608c0,2.309-2.5,3.753-4.5,2.598L7.974,7.902C7.017,7.35,5.794,7.677,5.242,8.634l-1,1.732  c-0.552,0.957-0.225,2.18,0.732,2.732L5.5,13.402c2,1.155,2,4.041,0,5.196l-0.526,0.304c-0.957,0.552-1.284,1.775-0.732,2.732  l1,1.732c0.552,0.957,1.775,1.284,2.732,0.732L8.5,23.794c2-1.155,4.5,0.289,4.5,2.598V27c0,1.105,0.895,2,2,2h2  c1.105,0,2-0.895,2-2v-0.608c0-2.309,2.5-3.753,4.5-2.598l0.526,0.304c0.957,0.552,2.18,0.225,2.732-0.732l1-1.732  c0.552-0.957,0.225-2.18-0.732-2.732L26.5,18.598c-2-1.155-2-4.041,0-5.196l0.526-0.304C27.983,12.546,28.311,11.323,27.758,10.366z  " fill="none" id="XMLID_242_" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></path></svg>
-                </button>
-            </nav>
-            <main className='w-full h-[95%] px-2'>
+    getGlobalMessages();
+    socket.current = io('http://localhost:3001', { withCredentials: true });
+    socket.current.on('socketMessage', (msg) => {
+      setGlobMsg((prev)=>[...prev, msg]);
+    });
+
+    socket.current.emit('clientConnected');
+    return () => {
+      if (socket.current) {
+        socket.current.disconnect();
+      }
+    };
+
+  }, []);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [globMsg]);
+  const logoutUser = async (e) => {
+    e.preventDefault();
+    try {
+      const logout = await axios.get('http://localhost:3001/api/auth/logout', { withCredentials: true });
+      console.log(logout.data.msg);
+      localStorage.clear();
+      setVerified(false);
+      // window.location.reload();
+      // navigate('/login');
+
+    } catch (error) {
+      console.log("Error in logout user", error);
+
+    }
+  }
+
+  const sendMsgToGlob = async () => {
+    try {
+      setLoading(true);
+      // console.log("From: ", from, "From Name: ", fromName);
+      // console.log("text: ",inputText );
+
+      socket.current.emit('socketMessage', { textData: inputText, to, from });
+      const sendToGlobal = await axios.post('http://localhost:3001/api/send/global', { textData: inputText, from, fromName }, { withCredentials: true });
+      console.log(sendToGlobal.data.globalList);
+      setInputText('');
+      setLoading(false);
+
+    } catch (error) {
+      console.error("Failed to send message to global chat", error);
+      setLoading(false);
+    }
+  }
+  return (
+    <div className='w-full h-full relative flex flex-col '>
+      <nav className='py-4 w-full h-[7vh]  px-3 border-b-2 flex text-white justify-between items-center'>
+        <span className='text-xl'>Global Chat-Room</span>
+        <button className='w-[30px] cursor-pointer' onClick={(e) => setOpenSetting(true)} >
+          <svg className='text-white ' enable-background="new 0 0 32 32" id="Editable-line" version="1.1" viewBox="0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="16" cy="16" fill="none" id="XMLID_224_" r="4" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></circle><path d="  M27.758,10.366l-1-1.732c-0.552-0.957-1.775-1.284-2.732-0.732L23.5,8.206C21.5,9.36,19,7.917,19,5.608V5c0-1.105-0.895-2-2-2h-2  c-1.105,0-2,0.895-2,2v0.608c0,2.309-2.5,3.753-4.5,2.598L7.974,7.902C7.017,7.35,5.794,7.677,5.242,8.634l-1,1.732  c-0.552,0.957-0.225,2.18,0.732,2.732L5.5,13.402c2,1.155,2,4.041,0,5.196l-0.526,0.304c-0.957,0.552-1.284,1.775-0.732,2.732  l1,1.732c0.552,0.957,1.775,1.284,2.732,0.732L8.5,23.794c2-1.155,4.5,0.289,4.5,2.598V27c0,1.105,0.895,2,2,2h2  c1.105,0,2-0.895,2-2v-0.608c0-2.309,2.5-3.753,4.5-2.598l0.526,0.304c0.957,0.552,2.18,0.225,2.732-0.732l1-1.732  c0.552-0.957,0.225-2.18-0.732-2.732L26.5,18.598c-2-1.155-2-4.041,0-5.196l0.526-0.304C27.983,12.546,28.311,11.323,27.758,10.366z  " fill="none" id="XMLID_242_" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></path></svg>
+        </button>
+      </nav>
+      <main className='w-full h-[95%] overflow-y-scroll overflow-x-hidden  px-2'>
 
 
-                {global && globMsg && loading === false ? globMsg.map((el, k) => {
-                    // console.log("fromName:", fromName, "from: ", from, "el.fromName:", el.fromName, "el.from:", el.from);
+        {global && globMsg && loading === false ? globMsg.map((el, k) => {
+          // console.log("fromName:", fromName, "from: ", from, "el.fromName:", el.fromName, "el.from:", el.from);
 
-                    if (el.from === from) {
-                        return (
-                            //right div
-                            <div id='messageCommingFromBackendFrom' className="w-full flex justify-end  items-end">
-                                <div key={k}
-                                    className={`  relative  px-2 py-4 rounded-tl-xl rounded-b-xl rounded-tr-0 mt-3   bg-[#f8f8f861] overflow-hidden `}>
+          if (el.from === from) {
+            return (
+              //right div
+              <div id='messageCommingFromBackendFrom' className="w-full flex justify-end  items-end">
+                <div key={k}
+                  className={`  relative  px-2 py-4 rounded-tl-xl rounded-b-xl rounded-tr-0 mt-3   bg-[#f8f8f861] overflow-hidden `}>
 
-                                    <h3 className={`text-white text-right`} >{el.textData}</h3>
-                                    <p className="absolute top-[0px] text-lg right-[10px]  " style={{color:`${themeColor}`}} >{el.fromName}</p>
-                                    <p className={`absolute bottom-0 left-[1px]  text-[#ffffffb4] text-sm`}>{new Date(el.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                </div>
-                            </div>
-                        )
-
-
-                    }
-                    return (
+                  <h3 className={`text-white text-right`} >{el.textData}</h3>
+                  <p className="absolute top-[0px] text-lg right-[10px]  " style={{ color: `${themeColor}` }} >{el.fromName}</p>
+                  <p className={`absolute bottom-0 left-[1px]  text-[#ffffffb4] text-sm`}>{new Date(el.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+              </div>
+            )
 
 
-
-                        <div key={k} id='messageCommingFromBackendTo' className="w-full flex justify-start items-start">
-                            <div className={` relative  px-2 py-4  rounded-tr-xl rounded-b-xl rounded-tl-0 mt-3   bg-[#f8f8f861] overflow-hidden `}>
-                                <h3 className="text-white ">{el.textData}</h3>
-                                <p className="absolute top-[0px]  text-md text-[#06dfb0]"  >{el.fromName}</p>
-                                <p className="absolute bottom-0 right-[1px] text-[#ffffffb4] text-sm">{new Date(el.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                            </div>
-                        </div>
+          }
+          return (
 
 
-                    )
-                }) : <Loading />}
-            </main>
-            <div className='bg-[#ffffff17] py-1 px-3 rounded-lg flex justify-between items-center'>
+
+            <div key={k} id='messageCommingFromBackendTo' className="w-full flex justify-start items-start">
+              <div className={` relative  px-2 py-4  rounded-tr-xl rounded-b-xl rounded-tl-0 mt-3   bg-[#f8f8f861] overflow-hidden `}>
+                <h3 className="text-white ">{el.textData}</h3>
+                <p className="absolute top-[0px]  text-md text-[#06dfb0]"  >{el.fromName}</p>
+                <p className="absolute bottom-0 right-[1px] text-[#ffffffb4] text-sm">{new Date(el.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
+            </div>
+
+
+          )
+        }) : <Loading />}
+        <div ref={messagesEndRef}></div>
+      </main>
+      <div className='bg-[#ffffff17] py-1 px-3 rounded-lg flex justify-between items-center'>
         <input onChange={(e) => setInputText(e.target.value)} value={inputText} className='w-full outline-none px-1 text-white text-xl' type="text" placeholder='Hey there type something' />
         <input type="file" className='hidden' name="" id="selectFiles" />
         <button onClick={() => {
@@ -143,8 +166,8 @@ function Global() {
         </button>
         <button className='w-full py-2 bg-[#e94b4b] mt-3 px-3 text-2xl rounded-lg cursor-pointer' onClick={() => setOpenSetting(false)} > Close</button>
       </div> : null}
-        </div>
-    )
+    </div>
+  )
 }
 
 export default Global

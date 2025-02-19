@@ -3,12 +3,27 @@ const Message = require("../modal/Message.modal");
 const User = require("../modal/User.modal");
 
 module.exports = {
+  setOnline: async (req, res) => {
+    const userId = req.user._id;
+    try {
+      const updatOnline = await User.findByIdAndUpdate({ _id: userId });
+      updatOnline.onlineUsers.push({ userId });
+      await updatOnline.save();
+      res.status(200).json({ msg: "user is online" });
+    } catch (error) {
+      console.log(error);
+      res.status(400).json({msg:"error in online client"});
+    }
+  },
   sendUserDataToFrontend: async (req, res) => {
     const userId = req.user._id;
     try {
-      const updatOnline=await User.findByIdAndUpdate({_id:userId});
-      updatOnline.onlineUsers.push({userId});
-      const user = await User.findById(userId).select(["name", "_id","email","onlineUsers"]);
+      const user = await User.findById(userId).select([
+        "name",
+        "_id",
+        "email",
+        "onlineUsers",
+      ]);
       res.status(200).json({ msg: "welcome to chatting website", user });
     } catch (error) {
       console.log(error);
@@ -21,7 +36,7 @@ module.exports = {
     const recieverId = req.params.id;
     // console.log("userID: ",userId,"recieverId:",recieverId);
 
-    const { text, image, } = req.body;
+    const { text, image } = req.body;
     try {
       const user = await User.findById(userId);
       const newMsg = await Message.create({
@@ -59,7 +74,7 @@ module.exports = {
         "name",
         "_id",
         "profilePic",
-        "onlineUsers"
+        "onlineUsers",
       ]); //'profilePic' import nahi ki he abi tak
       if (!users) {
         return res.status(404).json({ msg: "no user found" });
@@ -71,33 +86,35 @@ module.exports = {
     }
   },
   globalMessage: async (req, res) => {
-    const { textData, image, from,to,fromName } = req.body;
-    
+    const { textData, image, from, to, fromName } = req.body;
+
     try {
       const globalList = await Global.create({
         textData,
-        image:image?image:null,
+        image: image ? image : null,
         from,
-        fromName
+        fromName,
       });
-      
-      console.log("text data",textData);
-      
+
+      console.log("text data", textData);
+
       res.status(200).json({ msg: "message sent successfully", globalList });
     } catch (error) {
       console.log("Error sending global message: ", error);
       res.status(400).json({ msg: "Failed to send global message" });
     }
   },
-  getGlobalMessage:async (req,res) => {
+  getGlobalMessage: async (req, res) => {
     const userId = req.user._id;
     try {
       const globalMessages = await Global.find().sort({ createdAt: 1 });
 
-      res.status(200).json({ msg: "messages fetched successfully", globalMessages });
-    
-  }catch(err){
-    console.log(err);
-    res.status(404).json({ msg: "global message not found" });
-  }}
+      res
+        .status(200)
+        .json({ msg: "messages fetched successfully", globalMessages });
+    } catch (err) {
+      console.log(err);
+      res.status(404).json({ msg: "global message not found" });
+    }
+  },
 };

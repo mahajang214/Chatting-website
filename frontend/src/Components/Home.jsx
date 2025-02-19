@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Loading from './Loading';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
@@ -7,10 +7,11 @@ import userStore from '../Store/Store';
 import { useNavigate } from 'react-router-dom';
 import ThemeChanger from './ThemeChanger';
 import ThemeStore from '../Store/ThemeStore';
+import { io } from 'socket.io-client'
 
 
 function Home() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const { to, toName, fromName, setVerified, global, setGlobal, from, setTo, setToName } = userStore();
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,8 @@ function Home() {
   const { themeColor, setThemeColor, setChatBodyColor, setBody, setTheme } = ThemeStore();
   const [themeDropdow, setThemeDropdow] = useState(false);
   const [themeContaineer, setThemeContaineer] = useState(false);
-
+  const socket = useRef(null);
+  const messagesEndRef = useRef(null);
   const navigate = useNavigate();
   // console.log("fromName",fromName,"to Name: ",toName);
   themeColor
@@ -36,28 +38,27 @@ function Home() {
 
     }
     fetchMessages();
-  }, [to])
-  // useGSAP(() => {
-  //   gsap.from('#home', {
-  //     duration: 1,
-  //     opacity: 0,
+    socket.current = io('http://localhost:3001', { withCredentials: true });
 
-  //   });
-  //   gsap.to('#home', {
-  //     duration: 1,
-  //     opacity: 1,
-  //   })
-  //   gsap.from('#messageCommingFromBackendFrom', {
-  //     duration: .5,
-  //     x: 300,
-  //     stagger: .2
-  //   })
-  //   gsap.from('#messageCommingFromBackendTo', {
-  //     duration: .5,
-  //     x: -300,
-  //     stagger: .2
-  //   })
-  // }, [to])
+    socket.current.on('socketMessage', (msg) => {
+      // if (msg.to === to || msg.from === to) {
+        setData(prevData => [...prevData, msg]);
+        // console.log("Message received in socket: ", msg);
+      // }
+    });
+
+    socket.current.emit('clientConnected');
+    return () => {
+      if (socket.current) {
+        socket.current.disconnect();
+      }
+    };
+  }, [to])
+  useEffect(()=>{
+   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+
+ },[data]);
+
 
   const sendData = async (e) => {
 
@@ -70,6 +71,7 @@ function Home() {
 
     try {
       setLoading(true);
+      socket.current.emit('socketMessage', { text: inputText, to, from });
       const send = await axios.post(`http://localhost:3001/api/chat/send/${to}`, { text: inputText }, { withCredentials: true });
       console.log(send.data);
       setLoading(false);
@@ -84,6 +86,7 @@ function Home() {
     e.preventDefault();
     try {
       const logout = await axios.get('http://localhost:3001/api/auth/logout', { withCredentials: true });
+      // socket.off('disconnect', {userId:from});
       console.log(logout.data.msg);
       localStorage.clear();
       setVerified(false);
@@ -104,7 +107,7 @@ function Home() {
           <svg className='text-white ' enable-background="new 0 0 32 32" id="Editable-line" version="1.1" viewBox="0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="16" cy="16" fill="none" id="XMLID_224_" r="4" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></circle><path d="  M27.758,10.366l-1-1.732c-0.552-0.957-1.775-1.284-2.732-0.732L23.5,8.206C21.5,9.36,19,7.917,19,5.608V5c0-1.105-0.895-2-2-2h-2  c-1.105,0-2,0.895-2,2v0.608c0,2.309-2.5,3.753-4.5,2.598L7.974,7.902C7.017,7.35,5.794,7.677,5.242,8.634l-1,1.732  c-0.552,0.957-0.225,2.18,0.732,2.732L5.5,13.402c2,1.155,2,4.041,0,5.196l-0.526,0.304c-0.957,0.552-1.284,1.775-0.732,2.732  l1,1.732c0.552,0.957,1.775,1.284,2.732,0.732L8.5,23.794c2-1.155,4.5,0.289,4.5,2.598V27c0,1.105,0.895,2,2,2h2  c1.105,0,2-0.895,2-2v-0.608c0-2.309,2.5-3.753,4.5-2.598l0.526,0.304c0.957,0.552,2.18,0.225,2.732-0.732l1-1.732  c0.552-0.957,0.225-2.18-0.732-2.732L26.5,18.598c-2-1.155-2-4.041,0-5.196l0.526-0.304C27.983,12.546,28.311,11.323,27.758,10.366z  " fill="none" id="XMLID_242_" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></path></svg>
         </button>
       </nav>
-      <main className='w-full h-[88.4%] relative'>
+      <main className='w-full h-[88.4%] overflow-y-scroll overflow-x-hidden py-2 relative'>
         {themeContaineer && <ThemeChanger />}
         {data && data.length > 0 ?
           data.map((el, k) => {
@@ -115,7 +118,7 @@ function Home() {
                 <div id='messageCommingFromBackendTo' className="w-full flex justify-start items-start">
                   <div className={` relative  px-2 py-4  rounded-tr-xl rounded-b-xl rounded-tl-0 mt-3   bg-[#f8f8f861] overflow-hidden `}>
                     <h3 className="text-white ">{el.text}</h3>
-                    <p className="absolute top-[0px] text-md" style={{ color: `#${themeColor}` }}>{toName}</p>
+                    <p className="absolute top-[0px] text-[#ffd608] text-md" style={{ color: `#${themeColor}` }}>{toName}</p>
                     <p className="absolute bottom-0 right-[1px] text-[#ffffffb4] text-sm">{new Date(el.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                   </div>
                 </div>
@@ -140,12 +143,12 @@ function Home() {
             }
           }) : <Loading />}
 
-
+<div ref={messagesEndRef} />
         {loading && <Loading />}
         {/* data.length<?<h1 className='text-2xl'>You haven't missed anything yet! No messages to show.</h1>: */}
       </main>
       <div className='bg-[#ffffff17] py-1 px-3 rounded-lg flex justify-between items-center'>
-        <input onChange={(e) => setInputText(e.target.value)} value={inputText} className='w-full outline-none px-1 text-xl' style={{color:'#fff'}} type="text" placeholder='Hey there type something' />
+        <input onChange={(e) => setInputText(e.target.value)} value={inputText} className='w-full outline-none px-1 text-xl' style={{ color: '#fff' }} type="text" placeholder='Hey there type something' />
         <input type="file" className='hidden' name="" id="selectFiles" />
         <button onClick={() => {
           const selectFiles = document.querySelector('#selectFiles');
@@ -161,7 +164,7 @@ function Home() {
       {openSetting && (
         <div id="settingPage" className={`absolute top-0 right-[0] w-1/5 h-screen rounded-l-lg flex flex-col items-center`} style={{ backgroundColor: `${themeColor}` }} >
           <h1 className='text-white font-bold text-3xl mt-2'>Setting</h1>
-          <button onClick={()=>navigate('/profile')} className='w-full py-4 bg-[#ffffff59] mt-3 px-3 items-center rounded-lg gap-3 flex cursor-pointer'>
+          <button onClick={() => navigate('/profile')} className='w-full py-4 bg-[#ffffff59] mt-3 px-3 items-center rounded-lg gap-3 flex cursor-pointer'>
             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="32px" height="32px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
               <g id="user">
                 <g>
