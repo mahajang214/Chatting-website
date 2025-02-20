@@ -26,7 +26,7 @@ function Login() {
         withCredentials: true
       });
       setLoading(false);
-      console.log(res.data.msg);
+      // console.log(res.data.msg);
       setVerified(true);
       setData({ email: "", password: "" });
       <ErrorMsg msg={`Login successfull`} />

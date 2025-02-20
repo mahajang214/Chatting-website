@@ -16,7 +16,7 @@ function ProfilePage() {
             try {
                 const res = await axios.get('http://localhost:3001/api/chat', { withCredentials: true });
                 setFetchUserData(res.data.user);
-                console.log(res.data);
+                // console.log(res.data);
 
             } catch (error) {
                 console.log(error);
@@ -39,8 +39,8 @@ function ProfilePage() {
                             // Set the image URL in the state
                             const formData = new FormData();
                             formData.append("file", blob, file.name);
-                            console.log("url:",url);
-                            console.log("formdata: ",formData);
+                            // console.log("url:",url);
+                            // console.log("formdata: ",formData);
                             setLoading(true);
                             try {
                                 const sendImageToServer = await axios.post('http://localhost:3001/api/auth/setProfile', formData
@@ -50,7 +50,7 @@ function ProfilePage() {
                                     },
                                     withCredentials: true
                                 });
-                                console.log(sendImageToServer.data);
+                                // console.log(sendImageToServer.data);
                                 setLoading(false);
                             } catch (error) {
                                 console.log(error);

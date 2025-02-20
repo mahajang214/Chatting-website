@@ -33,7 +33,7 @@ function Register() {
                 withCredentials: true
             });
             setLoading(false);
-            console.log(res.data.msg);
+            // console.log(res.data.msg);
             setData({ name: "", email: "", password: "" });
             <ErrorMsg msg={`Registration successfull`} />
             navigate('/login');

@@ -17,7 +17,7 @@ function AllUsersSidebar() {
             try {
                 const res = await axios.get('http://localhost:3001/api/chat/users', { withCredentials: true })
                 setUsers(res.data.users);
-                console.log(res.data);
+                // console.log(res.data);
             } catch (error) {
                 console.error('Failed to fetch users:', error);
             }
